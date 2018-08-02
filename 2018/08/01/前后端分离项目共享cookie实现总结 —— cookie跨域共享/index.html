@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+
+<!-- С���� -->
+<script type="text/javascript" src="/js/src/love.js"></script>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="COOKIE跨域共享," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="##1. 问题描述 最近做的项目中涉及到sso单点登录，登录成功后需要把token和用户信息以cookie的形式种到前端，由于项目是前后端分离的，域名肯定是不同的，这就涉及到了前后端跨域共享cookie的问题，下面就说说我在项目中的解决思路。为什么会有跨域？出于安全原因，浏览器限制从脚本中发起的跨域HTTP请求。默认的安全限制为同源策略， 即JavaScript或Cookie只能访问同域下的内容。">
+<meta name="keywords" content="COOKIE跨域共享">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前后端分离项目共享cookie实现总结 —— cookie跨域共享">
+<meta property="og:url" content="https://mameba.github.io/2018/08/01/前后端分离项目共享cookie实现总结 —— cookie跨域共享/index.html">
+<meta property="og:site_name" content="mameba&#39;s blog">
+<meta property="og:description" content="##1. 问题描述 最近做的项目中涉及到sso单点登录，登录成功后需要把token和用户信息以cookie的形式种到前端，由于项目是前后端分离的，域名肯定是不同的，这就涉及到了前后端跨域共享cookie的问题，下面就说说我在项目中的解决思路。为什么会有跨域？出于安全原因，浏览器限制从脚本中发起的跨域HTTP请求。默认的安全限制为同源策略， 即JavaScript或Cookie只能访问同域下的内容。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-02T02:37:57.663Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前后端分离项目共享cookie实现总结 —— cookie跨域共享">
+<meta name="twitter:description" content="##1. 问题描述 最近做的项目中涉及到sso单点登录，登录成功后需要把token和用户信息以cookie的形式种到前端，由于项目是前后端分离的，域名肯定是不同的，这就涉及到了前后端跨域共享cookie的问题，下面就说说我在项目中的解决思路。为什么会有跨域？出于安全原因，浏览器限制从脚本中发起的跨域HTTP请求。默认的安全限制为同源策略， 即JavaScript或Cookie只能访问同域下的内容。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://mameba.github.io/2018/08/01/前后端分离项目共享cookie实现总结 —— cookie跨域共享/"/>
+
+
+
+
+
+  <title>前后端分离项目共享cookie实现总结 —— cookie跨域共享 | mameba's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mameba's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">mameba.github.io</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mameba.github.io/2018/08/01/前后端分离项目共享cookie实现总结 —— cookie跨域共享/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zhang ChenYang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mameba's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前后端分离项目共享cookie实现总结 —— cookie跨域共享</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-01T17:25:45+08:00">
+                2018-08-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,151 ��
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  5 ����
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>##1. 问题描述</p>
+<p>最近做的项目中涉及到<code>sso单点登录</code>，登录成功后需要把token和用户信息以cookie的形式种到前端，由于项目是前后端分离的，域名肯定是不同的，这就涉及到了<code>前后端跨域共享cookie</code>的问题，下面就说说我在项目中的解决思路。<br><strong>为什么会有跨域？</strong><br>出于安全原因，浏览器限制从脚本中发起的跨域HTTP请求。默认的安全限制为同源策略， 即JavaScript或Cookie只能访问同域下的内容。</p>
+<hr>
+<a id="more"></a>
+<h2 id="2-解决思路"><a href="#2-解决思路" class="headerlink" title="2. 解决思路"></a>2. 解决思路</h2><ul>
+<li><p>本文中采用的方法均只需在后端操作，并在实际项目中应用可行。</p>
+<h3 id="2-1-通过二级域名共享"><a href="#2-1-通过二级域名共享" class="headerlink" title="2.1 通过二级域名共享"></a>2.1 通过二级域名共享</h3></li>
+<li><p>二级域名<br>首先解释一下什么是二级域名。exp：拿域名test.a.b.io来说，io是这个域名的一级域名，b.io是二级域名，a.b.io是三级域名，以此类推。<br>由于公司的所有域名的二级域名是相同的，我使用的就是这种解决方案。</p>
+</li>
+<li>代码实现（基于JDK1.8）</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//共享cookie token</span></span><br><span class="line">Cookie token = <span class="keyword">new</span> Cookie(<span class="string">"token"</span>, token);</span><br><span class="line">token.setDomain(<span class="string">"test.io"</span>);  <span class="comment">//在二级域名test.io下共享cookie</span></span><br><span class="line">token.setPath(<span class="string">"/"</span>);</span><br><span class="line">token.setMaxAge(Integer.MAX_VALUE);</span><br><span class="line">token.setSecure(<span class="keyword">false</span>);</span><br><span class="line">response.addCookie(token);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//关闭浏览器时删除cookie</span></span><br><span class="line">Cookie token = <span class="keyword">new</span> Cookie(<span class="string">"token"</span>, <span class="keyword">null</span>);</span><br><span class="line">token.setDomain(<span class="string">"test.io"</span>);</span><br><span class="line">token.setPath(<span class="string">"/"</span>);</span><br><span class="line">token.setSecure(<span class="keyword">false</span>);</span><br><span class="line">token.setMaxAge(<span class="number">0</span>);  <span class="comment">//关闭浏览器删除cookie</span></span><br><span class="line">response.addCookie(token);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>参数描述<br><strong>domain</strong>：需要设置的<code>域名</code>(至少是二级域名，不能通过一级域名共享)，比如cookie1的domain设置为test.io，则只有二级域名为test.io的客户端能在浏览器接收中到cookie1。<br><strong>path</strong>：设置可以<code>访问cookie的路径</code>。假如域名为b.test.com的后端项目需要把cookie1和cookie2通过二级域名共享到a.test.com（客户端），其中cookie1的path设置为/，cookie2的path为/test/，则a.test.com下的所有页面都可以访问到cookie1，而cookie2只有域名路径a.test.com/test/下的页面才能访问。<br><strong>maxAge</strong>：<code>过期时间</code>(时间单位为秒)，设置为负数关闭浏览器该cookie失效，设置为0表示删除该cookie，整数则设置时间过后cookie失效。<br><strong>secure</strong>：是否<code>加密方式</code>传输，默认false，为true的话只能使用https协议(因为https协议是加密协议，而HTTP不是)。</li>
+<li>总结<br>若想通过二级域名实现跨域共享cookie，则跨域的域名需<code>确保至少二级域名相同</code>，然后设置cookie的属性即可。<h3 id="2-2-通过设置response的header"><a href="#2-2-通过设置response的header" class="headerlink" title="2.2 通过设置response的header"></a>2.2 通过设置response的header</h3></li>
+<li><p>代码实现（基于spring-boot，JDK1.8）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/test.do"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testHandler</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span></span>&#123;</span><br><span class="line">    response.setHeader(<span class="string">"Access-Control-Allow-Headers"</span>, <span class="string">"X-Requested-With, accept, content-type, xxxx"</span>);</span><br><span class="line">    response.setHeader(<span class="string">"Access-Control-Allow-Methods"</span>, <span class="string">"GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, PATCH"</span>);</span><br><span class="line">    response.setHeader(<span class="string">"Access-Control-Allow-Credentials"</span>, <span class="string">"true"</span>); </span><br><span class="line">    response.setHeader(<span class="string">"Access-Control-Allow-Origin"</span>, <span class="string">"http://localhost:8080"</span>);</span><br><span class="line">    Cookie cookieName = <span class="keyword">new</span> Cookie(<span class="string">"user_name"</span>, <span class="string">"test"</span>);</span><br><span class="line">    cookieName.setPath(<span class="string">"/"</span>);</span><br><span class="line">    cookieName.setMaxAge(Integer.MAX_VALUE);</span><br><span class="line">    response.addCookie(cookieName);</span><br><span class="line">   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>参数描述<br><strong>“Access-Control-Allow-Headers”</strong>：<code>可选字段</code>，XMLHttpRequest对象的getResponseHeader()方法只能拿到6个基本字段：Cache-Control、Content-Language、Content-Type、Expires、Last-Modified、Pragma。如果想拿到其他字段，就必须在Access-Control-Expose-Headers里面指定。<br><strong>“Access-Control-Allow-Methods”</strong>：<code>可选字段</code>，表示允许请求该接口的方法类型。<br><strong>“Access-Control-Allow-Credentials”</strong>：<code>可选字段</code>。它的值是一个布尔值，表示<code>是否允许发送Cookie给服务器</code>。默认情况下，Cookie不包括在CORS请求之中。设为true，即表示服务器明确许可，Cookie可以包含在请求中，一起发给服务器。这个值也只能设为true，如果服务器不要浏览器发送Cookie，删除该字段即可。<br><strong>“Access-Control-Allow-Origin”</strong>：<code>必填字段</code>。它的值要么是请求时Origin字段的值，即客户端的域名(如前端域名<a href="http://localhost:8080)，设置为*时，表示接受任意域名的请求。" target="_blank" rel="noopener">http://localhost:8080)，设置为*时，表示接受任意域名的请求。</a></p>
+</li>
+</ul>
+<h3 id="2-3-通过设置-CrossOrigin"><a href="#2-3-通过设置-CrossOrigin" class="headerlink" title="2.3 通过设置@CrossOrigin"></a>2.3 通过设置@CrossOrigin</h3><ul>
+<li>我们也可以通过配置@CrossOrigin来实现跨域，<code>orgins</code>中是接收跨域cookie的域名（可以为多个）。</li>
+<li>代码实现（基于spring-boot，JDK1.8）<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@CrossOrigin</span>(origins = <span class="string">"http://localhost:8080"</span>, maxAge = <span class="number">3600</span>, methods = &#123;RequestMethod.OPTIONS, RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE&#125;)</span><br><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/test.do"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testHandler</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span></span>&#123;</span><br><span class="line">    </span><br><span class="line">    Cookie cookieName = <span class="keyword">new</span> Cookie(<span class="string">"user_name"</span>, <span class="string">"test"</span>);</span><br><span class="line">    cookieName.setPath(<span class="string">"/"</span>);</span><br><span class="line">    cookieName.setMaxAge(Integer.MAX_VALUE);</span><br><span class="line">    response.addCookie(cookieName);</span><br><span class="line">   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="3-扩展"><a href="#3-扩展" class="headerlink" title="3. 扩展"></a>3. 扩展</h2><ul>
+<li>上文介绍的几种方法都是只需要在后端操作，此外还有别的跨域解决方法，这里就不一一介绍，因为没有亲自证明其可行性，想使用此方法可以参考别的博客。</li>
+<li><a href="https://blog.csdn.net/u014607184/article/details/52027879" target="_blank" rel="noopener">JSONP</a> </li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/COOKIE跨域共享/" rel="tag"># COOKIE跨域共享</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/31/hello-world/" rel="next" title="Hello World">
+                <i class="fa fa-chevron-left"></i> Hello World
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Zhang ChenYang" />
+            
+              <p class="site-author-name" itemprop="name">Zhang ChenYang</p>
+              <p class="site-description motion-element" itemprop="description">javaС�׼�¼�ɳ�֮·</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+              </a>
+            </div>
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-解决思路"><span class="nav-number">1.</span> <span class="nav-text">2. 解决思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-通过二级域名共享"><span class="nav-number">1.1.</span> <span class="nav-text">2.1 通过二级域名共享</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-通过设置response的header"><span class="nav-number">1.2.</span> <span class="nav-text">2.2 通过设置response的header</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-通过设置-CrossOrigin"><span class="nav-number">1.3.</span> <span class="nav-text">2.3 通过设置@CrossOrigin</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-扩展"><span class="nav-number">2.</span> <span class="nav-text">3. 扩展</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang ChenYang</span>
+
+  
+</div>
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+<style>#forkongithub a{background:#000;color:#fff;text-decoration:none;font-family:arial,sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#fff;color:#000;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:fixed;display:block;top:0;right:0;width:200px;overflow:hidden;height:200px;z-index:9999;}#forkongithub a{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-o-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/mameba">Fork me on GitHub</a></span>
+</html>
