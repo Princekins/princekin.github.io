@@ -71,7 +71,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="Mysql Mysql索引 联合索引 最左匹配," />
 
 
 
@@ -82,17 +82,18 @@
 
 
 
-<meta name="description" content="java小白记录成长之路">
-<meta name="keywords" content="java">
-<meta property="og:type" content="website">
-<meta property="og:title" content="mameba&#39;s blog">
-<meta property="og:url" content="https://mameba.github.io/index.html">
+<meta name="description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。 2. 概念 2.1 索引原理当表中有大量记录时，若要对表进行查询，第一种搜索信息方式是全表搜索，是将所有记录一一取出，和查询条件进行一一对比，然后返回满足条件的记录，这样做会消耗大量数据库系统时间，并造成大量磁盘I/O操作；第二种就是在表中建立索引，然后">
+<meta name="keywords" content="Mysql Mysql索引 联合索引 最左匹配">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mysql联合索引——最左前缀匹配原则总结">
+<meta property="og:url" content="https://mameba.github.io/2018/08/02/Mysql Mysql索引 联合索引 最左匹配/index.html">
 <meta property="og:site_name" content="mameba&#39;s blog">
-<meta property="og:description" content="java小白记录成长之路">
+<meta property="og:description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。 2. 概念 2.1 索引原理当表中有大量记录时，若要对表进行查询，第一种搜索信息方式是全表搜索，是将所有记录一一取出，和查询条件进行一一对比，然后返回满足条件的记录，这样做会消耗大量数据库系统时间，并造成大量磁盘I/O操作；第二种就是在表中建立索引，然后">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-03T02:58:29.013Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="mameba&#39;s blog">
-<meta name="twitter:description" content="java小白记录成长之路">
+<meta name="twitter:title" content="Mysql联合索引——最左前缀匹配原则总结">
+<meta name="twitter:description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。 2. 概念 2.1 索引原理当表中有大量记录时，若要对表进行查询，第一种搜索信息方式是全表搜索，是将所有记录一一取出，和查询条件进行一一对比，然后返回满足条件的记录，这样做会消耗大量数据库系统时间，并造成大量磁盘I/O操作；第二种就是在表中建立索引，然后">
 
 
 
@@ -122,13 +123,13 @@
 
 
 
-  <link rel="canonical" href="https://mameba.github.io/"/>
+  <link rel="canonical" href="https://mameba.github.io/2018/08/02/Mysql Mysql索引 联合索引 最左匹配/"/>
 
 
 
 
 
-  <title>mameba's blog</title>
+  <title>Mysql联合索引——最左前缀匹配原则总结 | mameba's blog</title>
   
 
 
@@ -147,8 +148,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -221,9 +221,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -253,9 +253,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/02/Mysql Mysql索引 联合索引 最左匹配/" itemprop="url">Mysql联合索引——最左前缀匹配原则总结</a></h1>
+          <h1 class="post-title" itemprop="name headline">Mysql联合索引——最左前缀匹配原则总结</h1>
         
 
         <div class="post-meta">
@@ -336,9 +334,7 @@
       
 
       
-        
-          
-            <h1 id="1-前言"><a href="#1-前言" class="headerlink" title="1 .前言"></a>1 .前言</h1><hr>
+        <h1 id="1-前言"><a href="#1-前言" class="headerlink" title="1 .前言"></a>1 .前言</h1><hr>
 <p>Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。</p>
 <h1 id="2-概念"><a href="#2-概念" class="headerlink" title="2. 概念"></a>2. 概念</h1><hr>
 <h2 id="2-1-索引原理"><a href="#2-1-索引原理" class="headerlink" title="2.1 索引原理"></a>2.1 索引原理</h2><p>当表中有大量记录时，若要对表进行查询，<strong>第一种搜索信息方式是全表搜索</strong>，是将所有记录一一取出，和查询条件进行一一对比，然后返回满足条件的记录，这样做会消耗大量数据库系统时间，并造成大量磁盘I/O操作；<strong>第二种就是在表中建立索引</strong>，然后在索引中找到符合查询条件的索引值，最后通过保存在索引中的<code>ROWID</code>（相当于页码）快速找到表中对应的记录。</p>
@@ -380,8 +376,6 @@
 <h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><hr>
 <p><a href="https://blog.csdn.net/zhanglu0223/article/details/8713149" target="_blank" rel="noopener">https://blog.csdn.net/zhanglu0223/article/details/8713149</a><br><a href="https://baike.baidu.com/item/%E7%B4%A2%E5%BC%95/5716853" target="_blank" rel="noopener">https://baike.baidu.com/item/%E7%B4%A2%E5%BC%95/5716853</a><br><a href="https://www.cnblogs.com/shijianchuzhenzhi/p/6383117.html" target="_blank" rel="noopener">https://www.cnblogs.com/shijianchuzhenzhi/p/6383117.html</a><br><a href="https://www.zhihu.com/question/52536048" target="_blank" rel="noopener">https://www.zhihu.com/question/52536048</a><br><a href="https://bbs.csdn.net/topics/390727789" target="_blank" rel="noopener">https://bbs.csdn.net/topics/390727789</a><br><a href="https://www.zhihu.com/question/36996520/answer/93256153" target="_blank" rel="noopener">https://www.zhihu.com/question/36996520/answer/93256153</a><br><a href="https://www.jianshu.com/p/b7911e0394b0" target="_blank" rel="noopener">https://www.jianshu.com/p/b7911e0394b0</a></p>
 
-          
-        
       
     </div>
     
@@ -396,329 +390,36 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://mameba.github.io/2018/08/01/前后端分离项目共享cookie实现总结 —— cookie跨域共享/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Zhang ChenYang">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mameba's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/01/前后端分离项目共享cookie实现总结 —— cookie跨域共享/" itemprop="url">前后端分离项目共享cookie实现总结 —— cookie跨域共享</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-01T17:25:45+08:00">
-                2018-08-01
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/Mysql-Mysql索引-联合索引-最左匹配/" rel="tag"># Mysql Mysql索引 联合索引 最左匹配</a>
           
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  1,151 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  5 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
         </div>
-      </header>
-    
+      
 
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
+      
       
       
 
       
-        
-          <h2 id="1-问题描述"><a href="#1-问题描述" class="headerlink" title="1. 问题描述"></a>1. 问题描述</h2><p>最近做的项目中涉及到<code>sso单点登录</code>，登录成功后需要把token和用户信息以cookie的形式种到前端，由于项目是前后端分离的，域名肯定是不同的，这就涉及到了<code>前后端跨域共享cookie</code>的问题，下面就说说我在项目中的解决思路。<br><strong>为什么会有跨域？</strong><br>出于安全原因，浏览器限制从脚本中发起的跨域HTTP请求。默认的安全限制为同源策略， 即JavaScript或Cookie只能访问同域下的内容。</p>
-<hr>
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/08/01/前后端分离项目共享cookie实现总结 —— cookie跨域共享/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/01/前后端分离项目共享cookie实现总结 —— cookie跨域共享/" rel="next" title="前后端分离项目共享cookie实现总结 —— cookie跨域共享">
+                <i class="fa fa-chevron-left"></i> 前后端分离项目共享cookie实现总结 —— cookie跨域共享
+              </a>
+            
           </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
 
-    
+          <span class="post-nav-divider"></span>
 
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://mameba.github.io/2018/07/31/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Zhang ChenYang">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mameba's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/07/31/hello-world/" itemprop="url">Hello World</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
+          <div class="post-nav-prev post-nav-item">
             
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-31T11:21:48+08:00">
-                2018-07-31
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  78 字
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  1 分钟
-                </span>
-              
-            </div>
-          
-
-          
-
+          </div>
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -728,10 +429,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -739,6 +441,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -759,8 +465,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -821,6 +536,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-前言"><span class="nav-text">1 .前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-概念"><span class="nav-text">2. 概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-索引原理"><span class="nav-text">2.1 索引原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-1-构建索引目的"><span class="nav-text">2.1.1 构建索引目的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-2-索引定义"><span class="nav-text">2.1.2 索引定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-3-索引优缺点："><span class="nav-text">2.1.3 索引优缺点：**</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-索引建立规则"><span class="nav-text">2.2 索引建立规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-最左前缀匹配原则"><span class="nav-text">2.3 最左前缀匹配原则</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附"><span class="nav-text">附</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -942,6 +673,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
