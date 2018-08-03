@@ -90,7 +90,7 @@
 <meta property="og:site_name" content="mameba&#39;s blog">
 <meta property="og:description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-08-03T03:02:12.618Z">
+<meta property="og:updated_time" content="2018-08-03T03:04:35.827Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Mysql联合索引——最左前缀匹配原则总结">
 <meta name="twitter:description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。">
@@ -350,11 +350,11 @@
 </li>
 <li>缺点<ul>
 <li>索引索要占用<code>额外的物理空间</code></li>
-<li>当对表中的数据进行增加、删除和修改的时候，索引也要动态的维护，<code>降低了数据的维护速度</code>。<h2 id="2-2-索引建立规则"><a href="#2-2-索引建立规则" class="headerlink" title="2.2 索引建立规则"></a>2.2 索引建立规则</h2>用于索引最好的备选数据列是那些出现在<code>where子句</code>、<code>join子句</code>、<code>order by</code>或<code>group by子句</code>中的列。仅仅出现在select关键字后面的输出数据列列表中的数据列并不是很好的备选列。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SELECT</span><br><span class="line">name        // 不是很好的备选列</span><br><span class="line">FROM</span><br><span class="line">student LEFT JOIN score</span><br><span class="line">ON student.name = score.studentName //好的备选列</span><br><span class="line">WHERE</span><br><span class="line">point = 90;   //好的备选列</span><br></pre></td></tr></table></figure>
-</li>
+<li>当对表中的数据进行增加、删除和修改的时候，索引也要动态的维护，<code>降低了数据的维护速度</code>。</li>
 </ul>
 </li>
 </ol>
+<h2 id="2-2-索引建立规则"><a href="#2-2-索引建立规则" class="headerlink" title="2.2 索引建立规则"></a>2.2 索引建立规则</h2><p>用于索引最好的备选数据列是那些出现在<code>where子句</code>、<code>join子句</code>、<code>order by</code>或<code>group by子句</code>中的列。仅仅出现在select关键字后面的输出数据列列表中的数据列并不是很好的备选列。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SELECT</span><br><span class="line">name        // 不是很好的备选列</span><br><span class="line">FROM</span><br><span class="line">student LEFT JOIN score</span><br><span class="line">ON student.name = score.studentName //好的备选列</span><br><span class="line">WHERE</span><br><span class="line">point = 90;   //好的备选列</span><br></pre></td></tr></table></figure></p>
 <h2 id="2-3-最左前缀匹配原则"><a href="#2-3-最左前缀匹配原则" class="headerlink" title="2.3 最左前缀匹配原则"></a>2.3 最左前缀匹配原则</h2><p>在mysql建立联合索引时会遵循最左前缀匹配的原则，即最左优先，在检索数据时从联合索引的最左边开始匹配。<br>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `student` (</span><br><span class="line">  `id` int(11) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `name` varchar(255) DEFAULT NULL,</span><br><span class="line">  `age` int(11) DEFAULT NULL,</span><br><span class="line">	`sex` VARCHAR(5) DEFAULT &apos;male&apos;,</span><br><span class="line">	`addr` VARCHAR(255) DEFAULT NULL,</span><br><span class="line">  PRIMARY KEY (`id`),</span><br><span class="line">  KEY `name_age_sex`(`name`,`age`,`sex`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8</span><br></pre></td></tr></table></figure></p>
 <p>上面代码对列name、列age和列sex建了一个联合索引<code>name_age_sex</code>，索引中的数据行按照name/age/sex的次序排列，这意味着，即使你在查询中只指定了name值，或者指定name和age值，MySQL也可以使用这个索引(最左匹配)。因此，这个索引可以被用于搜索如下所示的数据列组合：<br>name, age, sex<br>name, age<br>name</p>
 <p>##注意：##</p>
