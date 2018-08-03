@@ -337,50 +337,15 @@
 
       
         
-          
-            <h1 id="1-前言"><a href="#1-前言" class="headerlink" title="1 .前言"></a>1 .前言</h1><hr>
-<p>Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。</p>
-<h1 id="2-概念"><a href="#2-概念" class="headerlink" title="2. 概念"></a>2. 概念</h1><hr>
-<h2 id="2-1-索引原理"><a href="#2-1-索引原理" class="headerlink" title="2.1 索引原理"></a>2.1 索引原理</h2><p>当表中有大量记录时，若要对表进行查询，<strong>第一种搜索信息方式是全表搜索</strong>，是将所有记录一一取出，和查询条件进行一一对比，然后返回满足条件的记录，这样做会消耗大量数据库系统时间，并造成大量磁盘I/O操作；<strong>第二种就是在表中建立索引</strong>，然后在索引中找到符合查询条件的索引值，最后通过保存在索引中的<code>ROWID</code>（相当于页码）快速找到表中对应的记录。</p>
-<h3 id="2-1-1-构建索引目的"><a href="#2-1-1-构建索引目的" class="headerlink" title="2.1.1 构建索引目的"></a>2.1.1 构建索引目的</h3><p>构建索引在于<code>提高查询效率</code>，索引类似书的目录，需要几页纸来存放目录，但通过目录可快速定位到章、节部分。同理，如果没有索引的话就需要在无序的表中遍历表直到找到指定的数据。</p>
-<h3 id="2-1-2-索引定义"><a href="#2-1-2-索引定义" class="headerlink" title="2.1.2 索引定义"></a>2.1.2 索引定义</h3><p>在关系数据库中，<code>索引是一种单独的、物理的对数据库表中一列或多列的值进行排序的一种存储结构</code>，它是某个表中一列或若干列值的集合和相应的指向表中物理标识这些值的数据页的逻辑指针清单。索引的作用相当于图书的目录，可以根据目录中的页码快速找到所需的内容。</p>
-<h3 id="2-1-3-索引优缺点："><a href="#2-1-3-索引优缺点：" class="headerlink" title="2.1.3 索引优缺点：**"></a>2.1.3 索引优缺点：**</h3><ol>
-<li>优点<ul>
-<li>大大加快数据的检索速度</li>
-<li>创建唯一性索引，保证数据库表中每一行数据的唯一性</li>
-<li>加速表与表之间的连接</li>
-<li>在使用分组和排序子句进行数据检索时，可以显著的减少查询中分组和排序的时间</li>
-</ul>
-</li>
-<li>缺点<ul>
-<li>索引索要占用<code>额外的物理空间</code></li>
-<li>当对表中的数据进行增加、删除和修改的时候，索引也要动态的维护，<code>降低了数据的维护速度</code>。<h2 id="2-2-索引建立规则"><a href="#2-2-索引建立规则" class="headerlink" title="2.2 索引建立规则"></a>2.2 索引建立规则</h2>用于索引最好的备选数据列是那些出现在<code>where子句</code>、<code>join子句</code>、<code>order by</code>或<code>group by子句</code>中的列。仅仅出现在select关键字后面的输出数据列列表中的数据列并不是很好的备选列。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SELECT</span><br><span class="line">name        // 不是很好的备选列</span><br><span class="line">FROM</span><br><span class="line">student LEFT JOIN score</span><br><span class="line">ON student.name = score.studentName //好的备选列</span><br><span class="line">WHERE</span><br><span class="line">point = 90;   //好的备选列</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ol>
-<h2 id="2-3-最左前缀匹配原则"><a href="#2-3-最左前缀匹配原则" class="headerlink" title="2.3 最左前缀匹配原则"></a>2.3 最左前缀匹配原则</h2><p>在mysql建立联合索引时会遵循最左前缀匹配的原则，即最左优先，在检索数据时从联合索引的最左边开始匹配。<br>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE `student` (</span><br><span class="line">  `id` int(11) NOT NULL AUTO_INCREMENT,</span><br><span class="line">  `name` varchar(255) DEFAULT NULL,</span><br><span class="line">  `age` int(11) DEFAULT NULL,</span><br><span class="line">	`sex` VARCHAR(5) DEFAULT &apos;male&apos;,</span><br><span class="line">	`addr` VARCHAR(255) DEFAULT NULL,</span><br><span class="line">  PRIMARY KEY (`id`),</span><br><span class="line">  KEY `name_age_sex`(`name`,`age`,`sex`)</span><br><span class="line">) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8</span><br></pre></td></tr></table></figure></p>
-<p>上面代码对列name、列age和列sex建了一个联合索引<code>name_age_sex</code>，索引中的数据行按照name/age/sex的次序排列，这意味着，即使你在查询中只指定了name值，或者指定name和age值，MySQL也可以使用这个索引(最左匹配)。因此，这个索引可以被用于搜索如下所示的数据列组合：<br>name, age, sex<br>name, age<br>name</p>
-<p>##注意：##</p>
-<ol>
-<li>查询语句中的字段顺序可以不完全按照索引的顺序。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM student WHERE name=&quot;li&quot; AND age=16</span><br><span class="line">SELECT * FROM student WHERE age=16 AND name=&quot;li&quot;</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>上面两个查询语句的结果是完全一样的，只不过是字段顺序不一致，但都会用到联合索引name_age_sex，因为mysql的查询优化器会帮你优化成索引可以识别的形式。</p>
-<ol start="2">
-<li>最左前缀匹配原则，非常重要的原则，mysql会一直向右匹配直到遇到<code>范围查询</code>(&gt;、&lt;、between、like)就停止匹配，比如a = 1 and b = 2 and c &gt; 3 and d = 4 如果建立(a,b,c,d)顺序的索引，d是用不到索引的，如果建立(a,b,d,c)的索引则都可以用到，a,b,d的顺序可以任意调整。</li>
-<li>经过实际验证（mysql版本5.7.11）<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM student WHERE name=&quot;li&quot; AND sex=&apos;male&apos;; //可以使用联合索引name_age_sex</span><br><span class="line">SELECT * FROM student WHERE age=16 AND sex=&quot;male&quot;; //不可以使用联合索引name_age_sex</span><br><span class="line">SELECT * FROM student WHERE age=16;  //不可以使用联合索引name_age_sex</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>但网上有好多人说第二个和第三个语句可以使用索引类型为index的索引，可能版本问题，有待进一步验证。</p>
-<h1 id="附"><a href="#附" class="headerlink" title="附"></a>附</h1><hr>
-<p><strong>帮助理解联合索引的一个小例子：</strong><br>假设数据 表T (a,b,c) rowid 为物理位置<br>rowid a b c<br>(1) 1 1 1<br>(2) 2 1 13<br>(3) 2 2 14<br>(4) 1 3 3<br>(5) 2 3 12<br>(6) 1 2 5<br>(7) 2 3 9<br>(8) 1 2 2<br>(9) 1 3 6<br>(10) 2 2 11<br>(11) 2 2 8<br>(12) 1 1 7<br>(13) 2 3 15<br>(14) 1 1 4<br>(15) 2 1 10</p>
-<p>当你创建一个索引 create index index_a_b_c on t(a,b,c), 则索引文件逻辑上等同于如下<br>a b rowid<br>1 1 1<br>1 1 12<br>1 1 14<br>1 2 6<br>1 2 8<br>1 3 4<br>1 3 9<br>2 1 2<br>2 1 15<br>2 2 3<br>2 2 10<br>2 2 11<br>2 3 5<br>2 3 7<br>2 3 13</p>
-<p>当select * from T where a=1 and b=3 的时候， 数据库系统可以直接从索引文件中直接<code>二分法</code>（mysql索引是基于B+树的）找到A=1的记录，然后再B=3的记录。<br>但如果你 where b=3 则需要遍历这个索引表的全部！</p>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><hr>
-<p><a href="https://blog.csdn.net/zhanglu0223/article/details/8713149" target="_blank" rel="noopener">https://blog.csdn.net/zhanglu0223/article/details/8713149</a><br><a href="https://baike.baidu.com/item/%E7%B4%A2%E5%BC%95/5716853" target="_blank" rel="noopener">https://baike.baidu.com/item/%E7%B4%A2%E5%BC%95/5716853</a><br><a href="https://www.cnblogs.com/shijianchuzhenzhi/p/6383117.html" target="_blank" rel="noopener">https://www.cnblogs.com/shijianchuzhenzhi/p/6383117.html</a><br><a href="https://www.zhihu.com/question/52536048" target="_blank" rel="noopener">https://www.zhihu.com/question/52536048</a><br><a href="https://bbs.csdn.net/topics/390727789" target="_blank" rel="noopener">https://bbs.csdn.net/topics/390727789</a><br><a href="https://www.zhihu.com/question/36996520/answer/93256153" target="_blank" rel="noopener">https://www.zhihu.com/question/36996520/answer/93256153</a><br><a href="https://www.jianshu.com/p/b7911e0394b0" target="_blank" rel="noopener">https://www.jianshu.com/p/b7911e0394b0</a></p>
-
-          
+          <h1 id="1-前言"><a href="#1-前言" class="headerlink" title="1 .前言"></a>1 .前言</h1><hr>
+<p>Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/08/02/Mysql Mysql索引 联合索引 最左匹配/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>

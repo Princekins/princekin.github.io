@@ -82,18 +82,18 @@
 
 
 
-<meta name="description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。 2. 概念 2.1 索引原理当表中有大量记录时，若要对表进行查询，第一种搜索信息方式是全表搜索，是将所有记录一一取出，和查询条件进行一一对比，然后返回满足条件的记录，这样做会消耗大量数据库系统时间，并造成大量磁盘I/O操作；第二种就是在表中建立索引，然后">
+<meta name="description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。">
 <meta name="keywords" content="Mysql Mysql索引 联合索引 最左匹配">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Mysql联合索引——最左前缀匹配原则总结">
 <meta property="og:url" content="https://mameba.github.io/2018/08/02/Mysql Mysql索引 联合索引 最左匹配/index.html">
 <meta property="og:site_name" content="mameba&#39;s blog">
-<meta property="og:description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。 2. 概念 2.1 索引原理当表中有大量记录时，若要对表进行查询，第一种搜索信息方式是全表搜索，是将所有记录一一取出，和查询条件进行一一对比，然后返回满足条件的记录，这样做会消耗大量数据库系统时间，并造成大量磁盘I/O操作；第二种就是在表中建立索引，然后">
+<meta property="og:description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-08-03T02:58:29.013Z">
+<meta property="og:updated_time" content="2018-08-03T03:01:08.194Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Mysql联合索引——最左前缀匹配原则总结">
-<meta name="twitter:description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。 2. 概念 2.1 索引原理当表中有大量记录时，若要对表进行查询，第一种搜索信息方式是全表搜索，是将所有记录一一取出，和查询条件进行一一对比，然后返回满足条件的记录，这样做会消耗大量数据库系统时间，并造成大量磁盘I/O操作；第二种就是在表中建立索引，然后">
+<meta name="twitter:description" content="1 .前言 Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。">
 
 
 
@@ -335,7 +335,7 @@
 
       
         <h1 id="1-前言"><a href="#1-前言" class="headerlink" title="1 .前言"></a>1 .前言</h1><hr>
-<p>Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。</p>
+<p>Mysql联合索引的最左前缀匹配原则是面试中常问的知识点，之前也在网上看到过很多的文章，但是感觉都不够全面，所以这里就自己总结一下。<br><a id="more"></a></p>
 <h1 id="2-概念"><a href="#2-概念" class="headerlink" title="2. 概念"></a>2. 概念</h1><hr>
 <h2 id="2-1-索引原理"><a href="#2-1-索引原理" class="headerlink" title="2.1 索引原理"></a>2.1 索引原理</h2><p>当表中有大量记录时，若要对表进行查询，<strong>第一种搜索信息方式是全表搜索</strong>，是将所有记录一一取出，和查询条件进行一一对比，然后返回满足条件的记录，这样做会消耗大量数据库系统时间，并造成大量磁盘I/O操作；<strong>第二种就是在表中建立索引</strong>，然后在索引中找到符合查询条件的索引值，最后通过保存在索引中的<code>ROWID</code>（相当于页码）快速找到表中对应的记录。</p>
 <h3 id="2-1-1-构建索引目的"><a href="#2-1-1-构建索引目的" class="headerlink" title="2.1.1 构建索引目的"></a>2.1.1 构建索引目的</h3><p>构建索引在于<code>提高查询效率</code>，索引类似书的目录，需要几页纸来存放目录，但通过目录可快速定位到章、节部分。同理，如果没有索引的话就需要在无序的表中遍历表直到找到指定的数据。</p>
