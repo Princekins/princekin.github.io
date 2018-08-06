@@ -90,7 +90,7 @@
 <meta property="og:site_name" content="mameba&#39;s blog">
 <meta property="og:description" content="1. 问题描述 项目前端框架基于vue.js和element-ui。vue中的样式是全局定义的，项目中的某个需求需要动态修改input输入框的显示样式">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-08-06T08:49:34.488Z">
+<meta property="og:updated_time" content="2018-08-06T08:54:51.247Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="vue.js中css样式覆盖问题——scoped作用域">
 <meta name="twitter:description" content="1. 问题描述 项目前端框架基于vue.js和element-ui。vue中的样式是全局定义的，项目中的某个需求需要动态修改input输入框的显示样式">
@@ -297,7 +297,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  109 字
+                  487 字
                 </span>
               
 
@@ -313,7 +313,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1 分钟
+                  2 分钟
                 </span>
               
             </div>
@@ -335,18 +335,18 @@
 
       
         <h1 id="1-问题描述"><a href="#1-问题描述" class="headerlink" title="1. 问题描述"></a>1. 问题描述</h1><hr>
-<p>项目前端框架基于vue.js和element-ui。vue中的样式是全局定义的，项目中的某个需求<code>需要动态修改input输入框的显示样式</code><a id="more"></a>（输入值非法时标红高亮），在修改时就想当然的通过class名来修改这个表格的样式，发现并不起作用；于是在网上搜了一下，发现好多说把文件中<style scoped>中的<code>scoped</code>去掉就可以通过class名修改，没仔细研究原理就去掉了。。。在本地和测试环境上都是没有问题的。。。谁知上线后所有页面的输入框样式都变了。。。<br>下面就详细介绍一下vue.js中的scoped作用域问题。</p>
+<p>项目前端框架基于vue.js和element-ui。vue中的样式是全局定义的，项目中的某个需求<code>需要动态修改input输入框的显示样式</code><a id="more"></a>（输入值非法时标红高亮），在修改时就想当然的通过class名来修改这个表格的样式，发现并不起作用；于是在网上搜了一下，发现好多说把文件中<code>&lt;style scoped&gt;</code>中的<code>scoped</code>去掉就可以通过class名修改，没仔细研究原理就去掉了。。。在本地和测试环境上都是没有问题的。。。谁知上线后所有页面的输入框样式都变了。。。<br>下面就详细介绍一下vue.js中的scoped作用域问题。</p>
 <h1 id="2-scoped详解"><a href="#2-scoped详解" class="headerlink" title="2. scoped详解"></a>2. scoped详解</h1><hr>
-<p>在vue.js中，若页面中的style标签中添加scoped属性，则表示该页面下的style的作用域为当前页面，scoped设计的初衷就是当前组件的样式不能修改其他任何地方的样式。若页面中的style标签没有添加scoped，则其下的样式的作用域为全局，也就是所有页面。使用时需注意，若在全局作用域的样式中通过class名修改样式，会导致其它页面下同class名的组件的样式被覆盖。<br>注意：<code>当前页面的样式（本地样式）会被全局样式给覆盖</code>，也就是在<style scoped>下的样式会被全局样式覆盖。</p>
+<p>在vue.js中，若页面中的style标签中添加scoped属性，则表示该页面下的style的作用域为当前页面，scoped设计的初衷就是当前组件的样式不能修改其他任何地方的样式。若页面中的style标签没有添加scoped，则其下的样式的作用域为全局，也就是所有页面。使用时需注意，若在全局作用域的样式中通过class名修改样式，会导致其它页面下同class名的组件的样式被覆盖。<br>注意：<code>当前页面的样式（本地样式）会被全局样式给覆盖</code>，也就是在<code>&lt;style scoped&gt;</code>下的样式会被全局样式覆盖。</p>
 <h1 id="3-一种在局部作用域中修改样式的方法"><a href="#3-一种在局部作用域中修改样式的方法" class="headerlink" title="3. 一种在局部作用域中修改样式的方法"></a>3. 一种在局部作用域中修改样式的方法</h1><hr>
-<p>如果你想在<style scoped>下修改某个公共组件在当前文件中的样式，可以这么做。</p>
+<p>如果你想在<code>&lt;style scoped&gt;</code>下修改某个公共组件在当前文件中的样式，可以这么做。</p>
 <ul>
 <li>父组件cssName+ /deep/+第三方库需要更改的cssName<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//编译前代码</span></span><br><span class="line">&lt;el-input <span class="class"><span class="keyword">class</span></span>=<span class="string">"input_test"</span> v-model=<span class="string">"test"</span>&gt;</span><br><span class="line">&lt;/el-input&gt;</span><br><span class="line"></span><br><span class="line">&lt;style scoped&gt;</span><br><span class="line"> .input_test /deep/ .el-input__inner &#123;</span><br><span class="line">    border-color: red;</span><br><span class="line">  &#125;</span><br><span class="line">&lt;style&gt;</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 <h1 id="4-参考"><a href="#4-参考" class="headerlink" title="4.参考"></a>4.参考</h1><hr>
-<p><a href="https://lvyongbo.gitbooks.io/vue-loader/content/features/scoped-css.html">https://lvyongbo.gitbooks.io/vue-loader/content/features/scoped-css.html</a><br><a href="https://github.com/vuejs/vue-loader/issues/821">https://github.com/vuejs/vue-loader/issues/821</a></p>
-</style></p>
+<p><a href="https://lvyongbo.gitbooks.io/vue-loader/content/features/scoped-css.html" target="_blank" rel="noopener">https://lvyongbo.gitbooks.io/vue-loader/content/features/scoped-css.html</a><br><a href="https://github.com/vuejs/vue-loader/issues/821" target="_blank" rel="noopener">https://github.com/vuejs/vue-loader/issues/821</a></p>
+
       
     </div>
     
@@ -517,7 +517,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-问题描述"><span class="nav-text">1. 问题描述</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-问题描述"><span class="nav-text">1. 问题描述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-scoped详解"><span class="nav-text">2. scoped详解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-一种在局部作用域中修改样式的方法"><span class="nav-text">3. 一种在局部作用域中修改样式的方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-参考"><span class="nav-text">4.参考</span></a></li></ol></div>
             
 
           </div>
