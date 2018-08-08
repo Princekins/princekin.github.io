@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+
+<!-- С���� -->
+<script type="text/javascript" src="/js/src/love.js"></script>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="mysql mysql事务 mysql隔离级别," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="1. 事务四大特性 数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 事务处理可以确保事务性单元内的所有操作都成功完成，否则不会永久更新面向数据的资源。通过将一组相关操作组合为一个要么全部成功要么全部失败的单元，可以简化错误恢复并使应用程序更加可靠。一个逻辑工作单元要成为事务，必须满足所谓的ACID（原子性、一致">
+<meta name="keywords" content="mysql mysql事务 mysql隔离级别">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql事务总结">
+<meta property="og:url" content="https://mameba.github.io/2018/08/07/mysql mysql事务 mysql隔离级别/index.html">
+<meta property="og:site_name" content="mameba&#39;s blog">
+<meta property="og:description" content="1. 事务四大特性 数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 事务处理可以确保事务性单元内的所有操作都成功完成，否则不会永久更新面向数据的资源。通过将一组相关操作组合为一个要么全部成功要么全部失败的单元，可以简化错误恢复并使应用程序更加可靠。一个逻辑工作单元要成为事务，必须满足所谓的ACID（原子性、一致">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-08T02:16:40.195Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysql事务总结">
+<meta name="twitter:description" content="1. 事务四大特性 数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 事务处理可以确保事务性单元内的所有操作都成功完成，否则不会永久更新面向数据的资源。通过将一组相关操作组合为一个要么全部成功要么全部失败的单元，可以简化错误恢复并使应用程序更加可靠。一个逻辑工作单元要成为事务，必须满足所谓的ACID（原子性、一致">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://mameba.github.io/2018/08/07/mysql mysql事务 mysql隔离级别/"/>
+
+
+
+
+
+  <title>mysql事务总结 | mameba's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mameba's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">mameba.github.io</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mameba.github.io/2018/08/07/mysql mysql事务 mysql隔离级别/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zhang ChenYang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mameba's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mysql事务总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-07T09:36:15+08:00">
+                2018-08-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,068 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  7 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="1-事务四大特性"><a href="#1-事务四大特性" class="headerlink" title="1. 事务四大特性"></a>1. 事务四大特性</h1><hr>
+<p><code>数据库事务</code>(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 事务处理可以确保事务性单元内的所有操作都成功完成，否则不会永久更新面向数据的资源。通过将一组相关操作组合为一个要么全部成功要么全部失败的单元，可以简化错误恢复并使应用程序更加可靠。一个逻辑工作单元要成为事务，必须满足所谓的<code>ACID</code>（原子性、一致性、隔离性和持久性）属性。事务是数据库运行中的逻辑工作单位，由DBMS中的事务管理子系统负责事务的处理。<br><a id="more"></a></p>
+<h2 id="1-1-原子性（Atomicity）"><a href="#1-1-原子性（Atomicity）" class="headerlink" title="1.1 原子性（Atomicity）"></a>1.1 原子性（Atomicity）</h2><p>事务必须是<code>原子工作单元</code>；对于其数据修改，<code>要么全部执行，要么全都不执行</code>（事务中的一个操作失败，数据库的状态就回滚至该事务执行前的状态）。<br><strong>例如：</strong> A账户余额100，B账户余额1000，一个事务C包含两个操作p和q，p是A向B转10，q是A向B转20，事务执行时p操作成功，q操作失败，回滚至事务C执行前的状态，即A账户余额100，B账户余额1000。（若p和q都执行成功，则A账户余额70，B账户余额1030）</p>
+<h2 id="1-2-一致性（Consistency）"><a href="#1-2-一致性（Consistency）" class="headerlink" title="1.2 一致性（Consistency）"></a>1.2 一致性（Consistency）</h2><p>一致性是指事务执行成功前后必须使数据库<code>从一个一致性状态换到另一个一致性状态</code>。<br><strong>例如：</strong> A和B账户总金额为1000，如果一个事务C只涉及到A、B之间的操作，那么不管A和B之间如何转账，事务C结束后A和B账户总金额必须还是1000。</p>
+<h2 id="1-3-隔离性（Isolation）"><a href="#1-3-隔离性（Isolation）" class="headerlink" title="1.3 隔离性（Isolation）"></a>1.3 隔离性（Isolation）</h2><p>隔离性是指多个用户并发访问数据库时（如操作同一张表），数据库为每个用户开启一个事务，相互之间互不干扰，即<code>多个并发事务之间要相互隔离</code>。<br><strong>隔离性应该达到的效果：</strong>有两个并发事务T1和T2，在T1事务看来，T2要么在T1执行之前就已提交，要么在T1提交以后才执行。</p>
+<h2 id="1-4-持久性（Durability）"><a href="#1-4-持久性（Durability）" class="headerlink" title="1.4 持久性（Durability）"></a>1.4 持久性（Durability）</h2><p>持久性是一个事务执行成功提交以后，对数据的修改应该<code>永久的保存在数据库系统中</code>，即使数据库发生故障也能够恢复。</p>
+<h1 id="2-事务隔离级别"><a href="#2-事务隔离级别" class="headerlink" title="2. 事务隔离级别"></a>2. 事务隔离级别</h1><hr>
+<p>数据库事务的隔离级别有4种，由低到高分别为<code>Read uncommitted</code> 、<code>Read committed</code> 、<code>Repeatable read</code> 、<code>Serializable</code> 。而且，在事务的并发操作中可能会出现<code>更新丢失</code>，<code>脏读</code>，<code>不可重复读</code>，<code>幻读</code>。下面通过事例一一阐述它们的概念与联系。</p>
+<h2 id="2-1-概念"><a href="#2-1-概念" class="headerlink" title="2.1 概念"></a>2.1 概念</h2><p>上一章中的隔离性保证事务相互之间不可见，实际开发中，事务最复杂的问题都是由事务隔离性引起的，因为完全的隔离性要求数据库同一时间只执行一个事务，这会严重影响数据库的性能。不完全的隔离性在事务数据并发读写会导致四大问题：<code>更新丢失</code>，<code>脏读</code>，<code>不可重复读</code>，<code>幻读</code>。</p>
+<ul>
+<li><p>更新丢失：两个事务同时读取同一条记录，A先修改记录，B也修改记录（B不知道A修改过），B提交之后的结果覆盖了A的修改。<br>如：student表中name为张三的学生的学号为666666，事务T1把张三的学号改为111111，事务T2把张三的学号改为222222提交成功后，覆盖了T1的修改。</p>
+</li>
+<li><p>脏读：<code>一个事务读取到另一个未提交事务对数据的修改</code>。<br>如：student表中name为张三的学生的学号为666666，事务T1把张三的学号改为111111，这时事务T2去student表中查询张三的学号，结果为111111，然后事务T1执行失败或没有执行，事务T2获取数据的过程就是脏读。</p>
+</li>
+<li><p>不可重复读：<code>一个事务执行过程中，多次执行同一读操作，返回的结果不一致</code>。<br>如：student表中name为张三的学生的学号为666666，事务T1去student表查询张三的学号，结果为666666，这时事务T2把张三的学号改为111111并提交成功，事务T1再去student表中查询张三的学号，结果为111111，这就是不可重复读（事务T1两次执行同一读操作，但返回的结果不同）。</p>
+</li>
+<li><p>幻读：又称为<code>虚读</code>，是指在<code>一个事务内，两次查询中数据条数不一致</code>。幻读和不可重复读类似，都是在两次查询过程中，区别，幻读是由于<code>其他事务做了插入记录的操作</code>，导致，记录条数有所增加。<br>如：事务T1查询student表中学生总数为1000，事务T2在查询结束后新增了一条学生数据，T1再查询student表中学生总数得到1001。</p>
+</li>
+</ul>
+<h2 id="2-2-四种隔离级别"><a href="#2-2-四种隔离级别" class="headerlink" title="2.2 四种隔离级别"></a>2.2 四种隔离级别</h2><p>为了避免2.1中出现的四种情况，数据库提供了四种隔离级别：读未提交、读已提交、可重复读、可串行化。</p>
+<ul>
+<li><p>读未提交（Read Uncommited）能解决<code>丢失更新</code>的问题。<br><strong>原理：</strong>读数据时不加锁，写数据时加上行级别的S锁（共享锁），提交时释放锁。行级别的S锁，不会对读产生影响，但是可以防止两个同时的写操作。</p>
+</li>
+<li><p>读已提交（Read commited）能解决<code>丢失更新</code>和<code>脏读</code>的问题。<br><strong>原理：</strong>事务读数据时加上行级别的S锁，读完释放（读完成就释放，不是事务提交才释放）；写数据时加上行级别的X锁（排它锁），事务结束释放锁。行级别的X锁，在事务写操作时，其它事务的读操作不能同时进行，避免了脏读；但是，由于读操作的锁加在读上（读完就释放锁），而不是事务上（事务结束才释放锁），所以可能发生不可重复读（两个读操作之间可以加入写操作）。</p>
+</li>
+<li><p>可重复读（Repeated Read）<em>mysql默认的隔离级别</em>，能解决<code>丢失更新</code>、<code>脏读</code>和<code>不可重复读</code>的问题。<br><strong>原理：</strong>事务读数据时加上行级别的S锁，<strong>事务结束才释放</strong>；写数据时加上行级别的X锁（排它锁），事务结束释放锁。这样同一事务中多个读操作获取数据是一致的，因为其它事务不能获得X锁。但是由于只是行级别的锁，不能保证幻读（其它事务仍可以新增记录，带来幻读问题）。</p>
+</li>
+<li><p>可串行化（Serializable ）能解决<code>丢失更新</code>、<code>脏读</code>、<code>不可重复读</code>和<code>幻读</code>。<br><strong>原理：</strong>事务读数据时加上<strong>表级别的S锁</strong>，事务结束才释放；写数据时加上<strong>表级别的X锁</strong>（排它锁），事务结束释放锁。这样当事务T1执行读操作时，其它事务不能执行写操作，避免了幻读。</p>
+</li>
+</ul>
+<p><strong>注：</strong>　通常来说，事务隔离级别越低，所需持有锁的时间也就越短，并发性能也就越好。</p>
+<h1 id="3-总结"><a href="#3-总结" class="headerlink" title="3. 总结"></a>3. 总结</h1><hr>
+<ul>
+<li><p>事务的（ACID）特性是由关系数据库管理系统（RDBMS，数据库系统）来实现的。数据库管理系统<code>采用日志来保证事务的原子性、一致性和持久性</code>。日志记录了事务对数据库所做的更新，如果某个事务在执行过程中发生错误，就可以根据日志，撤销事务对数据库已做的更新，使数据库退回到执行事务前的初始状态。</p>
+</li>
+<li><p>数据库管理系统<code>采用锁机制来实现事务的隔离性</code>。当多个事务同时更新数据库中相同的数据时，只允许持有锁的事务能更新该数据，其他事务必须等待，直到前一个事务释放了锁，其他事务才有机会更新该数据。</p>
+</li>
+</ul>
+<h1 id="3-参考"><a href="#3-参考" class="headerlink" title="3. 参考"></a>3. 参考</h1><hr>
+<p><a href="https://blog.csdn.net/yangtianyu1218/article/details/51543634" target="_blank" rel="noopener">https://blog.csdn.net/yangtianyu1218/article/details/51543634</a><br><a href="https://www.cnblogs.com/ws-astrologer/p/6681089.html" target="_blank" rel="noopener">https://www.cnblogs.com/ws-astrologer/p/6681089.html</a><br><a href="https://blog.csdn.net/longxingzhiwen/article/details/53912475" target="_blank" rel="noopener">https://blog.csdn.net/longxingzhiwen/article/details/53912475</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mysql-mysql事务-mysql隔离级别/" rel="tag"># mysql mysql事务 mysql隔离级别</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/06/vue.js scope作用域 css样式覆盖/" rel="next" title="vue.js中css样式覆盖问题——scoped作用域">
+                <i class="fa fa-chevron-left"></i> vue.js中css样式覆盖问题——scoped作用域
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Zhang ChenYang" />
+            
+              <p class="site-author-name" itemprop="name">Zhang ChenYang</p>
+              <p class="site-description motion-element" itemprop="description">java小白记录成长之路</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons" />
+              </a>
+            </div>
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-事务四大特性"><span class="nav-text">1. 事务四大特性</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-原子性（Atomicity）"><span class="nav-text">1.1 原子性（Atomicity）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-一致性（Consistency）"><span class="nav-text">1.2 一致性（Consistency）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-隔离性（Isolation）"><span class="nav-text">1.3 隔离性（Isolation）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-持久性（Durability）"><span class="nav-text">1.4 持久性（Durability）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-事务隔离级别"><span class="nav-text">2. 事务隔离级别</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-概念"><span class="nav-text">2.1 概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-四种隔离级别"><span class="nav-text">2.2 四种隔离级别</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-总结"><span class="nav-text">3. 总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-参考"><span class="nav-text">3. 参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zhang ChenYang</span>
+
+  
+</div>
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+<style>#forkongithub a{background:#000;color:#fff;text-decoration:none;font-family:arial,sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#fff;color:#000;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:fixed;display:block;top:0;right:0;width:200px;overflow:hidden;height:200px;z-index:9999;}#forkongithub a{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);-ms-transform:rotate(45deg);-moz-transform:rotate(45deg);-o-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/mameba">Fork me on GitHub</a></span>
+</html>
